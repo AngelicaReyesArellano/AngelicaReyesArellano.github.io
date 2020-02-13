@@ -1,0 +1,9 @@
+
+#
+# Sobre este sitio
+#  
+ ---
+
+##Sitio elaborado para la clase de Inferencia Estadística de la Facultad de Ciencias de la UNAM.
+
+ ---

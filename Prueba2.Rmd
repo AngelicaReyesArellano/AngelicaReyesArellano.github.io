@@ -1,0 +1,94 @@
+---
+title: "Prueba McNemar"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Primera practica
+
+
+La prueba McNemar es aplicable a datos formados por vectores de dos entradas de respuesta binaria (es decir, datos pareados binarios). Por ejemplo, suponga que tiene gemelos asignados al azar a dos grupos de tratamiento (Prueba y Control), luego se evaluaron en un resultado binario (aprobado o no).
+
+Hay 4 resultados posibles para cada par:
+
+(a) ambos gemelos fallan, 
+
+(b) el gemelo en el control el grupo falla y el del grupo de prueba pasa, 
+
+(c) el gemelo del grupo de prueba falla y el uno en el grupo de control pasa, o 
+
+(d) pasan ambos gemelos.
+
+
+A continuación se presenta una tabla donde la de el número de gemelos que caen en cada una de las cuatro categorías se denota a, b, c y d:
+
+
+```{r echo=FALSE, results='asis'}
+tabla = matrix(c("a","b","c","d"), ncol=2, byrow=TRUE)
+tabla = as.data.frame(tabla)
+colnames(tabla) = c("falla", "aprueba")
+rownames(tabla) = c("falla", "aprueba")
+knitr::kable(tabla, caption = "Tabla de casos")
+```
+
+Para probar si el tratamiento es útil, utilizamos solo el número de pares discordantes de gemelos, b y c, ya que los otros pares de gemelos no nos dicen nada sobre si el tratamiento es útil o no. El estadístico de la prueba es:
+
+
+\[
+Q = (b-a)^2/(b+c)
+\]
+
+que para muestras grandes se distribuye como una distribución chi-cuadrado con 1 grado de libertad.
+Una aproximación más cercana a la distributina chi-cuadrado utiliza una corrección de continuidad:
+
+\[
+Q = (|b-a|-1)^2/(b+c)
+\]
+
+En R, se pueden encontrar las funciones "mcnemar.test" y "mcnemar.exact" que calculan la prueba con la aproximación Ji-cuadrada y con la distribución exacta, respectivamente.
+
+Ejemplo con la distribución aproximada (con más de 20 observaciones):
+```{r cars}
+#Se fija la semilla
+set.seed(0)
+
+#Se obtiene la información (ejemplo simulado)
+datos = matrix(rbinom(2000,1, 0.5),1000,2)
+
+#creamos la prueba como una función
+McNemar = function(datos, alfa = 0.05){
+  #creamos la tabla de casos
+  tabla = as.data.frame(matrix(rep(NA,4), ncol=2, byrow=TRUE))
+  colnames(tabla) = c("falla", "aprueba")
+  rownames(tabla) = c("falla", "aprueba")
+  
+  #Se asigna un caso a cada observación y se cuentan
+  tabla[1,1] = length(which(which(datos[,1]==0) %in% which(datos[,2]==0)))
+  tabla[1,2] = length(which(which(datos[,1]==0) %in% which(datos[,2]==1)))
+  tabla[2,1] = length(which(which(datos[,1]==1) %in% which(datos[,2]==0)))
+  tabla[2,2] = length(which(which(datos[,1]==1) %in% which(datos[,2]==1)))
+  
+  #se calcula el estadistico
+  Estadistico = (abs(tabla[1,2]-tabla[1,1])-1)^2/(tabla[1,2] + tabla[2,1])
+  
+  #el p value
+  Pvalue = pchisq(Estadistico,1)
+  #se toma una decisión respecto a la hipótesis nula
+  if(Pvalue<alfa){
+    decision ="Se rechaza la hipótesis nula"
+  }else{
+     decision ="No se rechaza la hipótesis nula"
+  }
+  
+  #resultado
+  return(c(paste0 ("Estadístico: ", Estadistico),
+           paste0("P valor: ", Pvalue),
+           paste0("Interpretación: ",decision)))
+}
+
+#aplicando la función a los datos con un alfa de 0.05
+McNemar(datos,alfa = 0.05)
+```

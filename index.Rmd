@@ -1,0 +1,9 @@
+
+#
+#Hola, bienvenidos a mi sitio de practicas de estadística.
+#
+ ---
+ 
+##Nombre: Reyes Arellano Angélica.
+ 
+ ---

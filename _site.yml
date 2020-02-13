@@ -1,0 +1,16 @@
+name: "my-website"
+output_dir: "."
+navbar:
+  title: "Mis practicas"
+  left:
+    - text: "Principal"
+      href: index.html
+    - text: "Información"
+      href: about.html
+      name: "my-website"
+    - text: "Prueba McNemar"
+      href: Prueba2.html
+output:
+  html_document:
+    theme: cosmo
+    highlight: textmate
