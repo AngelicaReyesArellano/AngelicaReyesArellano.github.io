@@ -313,18 +313,18 @@ $(document).ready(function () {
 <thead>
 <tr class="header">
 <th></th>
-<th align="left">falla</th>
 <th align="left">aprueba</th>
+<th align="left">falla</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>falla</td>
+<td>aprueba</td>
 <td align="left">a</td>
 <td align="left">b</td>
 </tr>
 <tr class="even">
-<td>aprueba</td>
+<td>falla</td>
 <td align="left">c</td>
 <td align="left">d</td>
 </tr>
@@ -338,32 +338,55 @@ Q = (b-a)^2/(b+c)
 <p><span class="math display">\[
 Q = (|b-a|-1)^2/(b+c)
 \]</span></p>
-<p>En R, se pueden encontrar las funciones “mcnemar.test” y “mcnemar.exact” que calculan la prueba con la aproximación Ji-cuadrada y con la distribución exacta, respectivamente.</p>
+<p>En R, se pueden encontrar las funciones “mcnemar.test” de la libreria “stats” y “mcnemar.exact” de que calculan la prueba con la aproximación Ji-cuadrada y con la distribución exacta, respectivamente.</p>
 <p>Ejemplo con la distribución aproximada (con más de 20 observaciones):</p>
-<pre class="r"><code>#Se fija la semilla
-set.seed(0)
-
-#Se obtiene la información (ejemplo simulado)
-datos = matrix(rbinom(2000,1, 0.5),1000,2)
-
-#creamos la prueba como una función
-McNemar = function(datos, alfa = 0.05){
+<pre class="r"><code>#creamos la prueba como una función
+McNemar = function(datos, alfa = 0.05, correccion = FALSE){
   #creamos la tabla de casos
   tabla = as.data.frame(matrix(rep(NA,4), ncol=2, byrow=TRUE))
-  colnames(tabla) = c(&quot;falla&quot;, &quot;aprueba&quot;)
-  rownames(tabla) = c(&quot;falla&quot;, &quot;aprueba&quot;)
+  colnames(tabla) = c(&quot;aprueba&quot;, &quot;falla&quot;)
+  rownames(tabla) = c(&quot;aprueba&quot;, &quot;falla&quot;)
   
   #Se asigna un caso a cada observación y se cuentan
-  tabla[1,1] = length(which(which(datos[,1]==0) %in% which(datos[,2]==0)))
-  tabla[1,2] = length(which(which(datos[,1]==0) %in% which(datos[,2]==1)))
-  tabla[2,1] = length(which(which(datos[,1]==1) %in% which(datos[,2]==0)))
-  tabla[2,2] = length(which(which(datos[,1]==1) %in% which(datos[,2]==1)))
+  tabla[1,1] = length(which(which(datos[,1]==1) %in% which(datos[,2]==1)))
+  tabla[1,2] = length(which(which(datos[,1]==1) %in% which(datos[,2]==0)))
+  tabla[2,1] = length(which(which(datos[,1]==0) %in% which(datos[,2]==1)))
+  tabla[2,2] = length(which(which(datos[,1]==0) %in% which(datos[,2]==0)))
   
-  #se calcula el estadistico
-  Estadistico = (abs(tabla[1,2]-tabla[1,1])-1)^2/(tabla[1,2] + tabla[2,1])
+  #se calcula el estadistico por casos
   
-  #el p value
-  Pvalue = pchisq(Estadistico,1)
+  #para muchos datos se calcula con correccion o sin correccion
+  if(correccion == TRUE){
+      Estadistico = (abs(tabla[1,2]-tabla[2,1])-1)^2/(tabla[1,2]+tabla[2,1])
+  }else{
+      Estadistico = (tabla[1,2]-tabla[2,1])^2/(tabla[1,2]+tabla[2,1])
+  }
+  
+  n = tabla[1,2]+tabla[2,1]
+  if( n &lt; 25){
+
+    if(tabla[1,2] == (tabla[1,2]+tabla[2,1])/2){
+      Pvalue = 1
+    }else{
+      Q = function(b,c){((b-c)^2)/(b+c)}
+      indices = (0:n)[sapply(0:n, function(x){
+        Q(x, n-x) &gt;= Q(tabla[1,2],tabla[2,1])
+      })]
+      Pvalue = 2^(-n)*sum(
+        sapply(indices, function(i){
+        choose(n,i)
+      }))
+      
+    }
+    if(tabla[1,2] == tabla[2,1]){
+      Pvalue = 1 - (0.5)*(0.5^n)*choose(n,tabla[1,2])
+    }
+
+  }else{
+    #el p value
+    Pvalue = 1 - pchisq(Estadistico,1)
+  }
+  
   #se toma una decisión respecto a la hipótesis nula
   if(Pvalue&lt;alfa){
     decision =&quot;Se rechaza la hipótesis nula&quot;
@@ -372,16 +395,101 @@ McNemar = function(datos, alfa = 0.05){
   }
   
   #resultado
-  return(c(paste0 (&quot;Estadístico: &quot;, Estadistico),
-           paste0(&quot;P valor: &quot;, Pvalue),
-           paste0(&quot;Interpretación: &quot;,decision)))
+  resultados = list(
+    Estadistico = Estadistico,
+    p_value = Pvalue,
+    interpretacion = decision,
+    casos = tabla
+  )
+  return(resultados)
 }
 
+#Se fija la semilla
+set.seed(0)
+
+#Se obtiene la información (ejemplo simulado)
+datos = matrix(rbinom(200,1, 0.5),100,2)
+
+#Caso: Distribución Ji cuadrada sin corrección
 #aplicando la función a los datos con un alfa de 0.05
-McNemar(datos,alfa = 0.05)</code></pre>
-<pre><code>## [1] &quot;Estadístico: 0.801603206412826&quot;                  
-## [2] &quot;P valor: 0.629385530962008&quot;                       
-## [3] &quot;Interpretación: No se rechaza la hipótesis nula&quot;</code></pre>
+(resultados = McNemar(datos,alfa = 0.05))</code></pre>
+<pre><code>## $Estadistico
+## [1] 0.6923077
+## 
+## $p_value
+## [1] 0.4053806
+## 
+## $interpretacion
+## [1] &quot;No se rechaza la hipótesis nula&quot;
+## 
+## $casos
+##         aprueba falla
+## aprueba      25    23
+## falla        29    23</code></pre>
+<pre class="r"><code>mcnemar.test(as.matrix(resultados$casos), correct = FALSE)</code></pre>
+<pre><code>## 
+##  McNemar&#39;s Chi-squared test
+## 
+## data:  as.matrix(resultados$casos)
+## McNemar&#39;s chi-squared = 0.69231, df = 1, p-value = 0.4054</code></pre>
+<pre class="r"><code>#Caso: Distribución Ji cuadrada con corrección
+#aplicando la función a los datos con un alfa de 0.05
+(resultados = McNemar(datos,alfa = 0.05, correccion = TRUE))</code></pre>
+<pre><code>## $Estadistico
+## [1] 0.4807692
+## 
+## $p_value
+## [1] 0.4880741
+## 
+## $interpretacion
+## [1] &quot;No se rechaza la hipótesis nula&quot;
+## 
+## $casos
+##         aprueba falla
+## aprueba      25    23
+## falla        29    23</code></pre>
+<pre class="r"><code>mcnemar.test(as.matrix(resultados$casos), correct = TRUE)</code></pre>
+<pre><code>## 
+##  McNemar&#39;s Chi-squared test with continuity correction
+## 
+## data:  as.matrix(resultados$casos)
+## McNemar&#39;s chi-squared = 0.48077, df = 1, p-value = 0.4881</code></pre>
+<pre class="r"><code>#Caso: Distribución exacta
+#install.packages(&quot;exact2x2&quot;)
+#Se fija la semilla
+set.seed(1)
+
+#Se obtiene la información (ejemplo simulado)
+datos = matrix(rbinom(30,1, 0.5),15,2)
+
+#aplicando la función a los datos con un alfa de 0.05
+(resultados = McNemar(datos,alfa = 0.05))</code></pre>
+<pre><code>## $Estadistico
+## [1] 0.5
+## 
+## $p_value
+## [1] 0.7265625
+## 
+## $interpretacion
+## [1] &quot;No se rechaza la hipótesis nula&quot;
+## 
+## $casos
+##         aprueba falla
+## aprueba       3     5
+## falla         3     4</code></pre>
+<pre class="r"><code>library(exact2x2)
+mcnemar.exact(as.matrix(resultados$casos))</code></pre>
+<pre><code>## 
+##  Exact McNemar test (with central confidence intervals)
+## 
+## data:  as.matrix(resultados$casos)
+## b = 5, c = 3, p-value = 0.7266
+## alternative hypothesis: true odds ratio is not equal to 1
+## 95 percent confidence interval:
+##   0.3242634 10.7324879
+## sample estimates:
+## odds ratio 
+##   1.666667</code></pre>
 </div>
 
 

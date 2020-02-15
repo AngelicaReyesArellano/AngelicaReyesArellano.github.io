@@ -29,8 +29,8 @@ A continuación se presenta una tabla donde la de el número de gemelos que caen
 ```{r echo=FALSE, results='asis'}
 tabla = matrix(c("a","b","c","d"), ncol=2, byrow=TRUE)
 tabla = as.data.frame(tabla)
-colnames(tabla) = c("falla", "aprueba")
-rownames(tabla) = c("falla", "aprueba")
+colnames(tabla) = c("aprueba", "falla")
+rownames(tabla) = c("aprueba", "falla")
 knitr::kable(tabla, caption = "Tabla de casos")
 ```
 
@@ -48,34 +48,57 @@ Una aproximación más cercana a la distributina chi-cuadrado utiliza una correc
 Q = (|b-a|-1)^2/(b+c)
 \]
 
-En R, se pueden encontrar las funciones "mcnemar.test" y "mcnemar.exact" que calculan la prueba con la aproximación Ji-cuadrada y con la distribución exacta, respectivamente.
+En R, se pueden encontrar las funciones "mcnemar.test" de la libreria "stats" y "mcnemar.exact" de que calculan la prueba con la aproximación Ji-cuadrada y con la distribución exacta, respectivamente.
 
 Ejemplo con la distribución aproximada (con más de 20 observaciones):
 ```{r cars}
-#Se fija la semilla
-set.seed(0)
-
-#Se obtiene la información (ejemplo simulado)
-datos = matrix(rbinom(2000,1, 0.5),1000,2)
-
 #creamos la prueba como una función
-McNemar = function(datos, alfa = 0.05){
+McNemar = function(datos, alfa = 0.05, correccion = FALSE){
   #creamos la tabla de casos
   tabla = as.data.frame(matrix(rep(NA,4), ncol=2, byrow=TRUE))
-  colnames(tabla) = c("falla", "aprueba")
-  rownames(tabla) = c("falla", "aprueba")
+  colnames(tabla) = c("aprueba", "falla")
+  rownames(tabla) = c("aprueba", "falla")
   
   #Se asigna un caso a cada observación y se cuentan
-  tabla[1,1] = length(which(which(datos[,1]==0) %in% which(datos[,2]==0)))
-  tabla[1,2] = length(which(which(datos[,1]==0) %in% which(datos[,2]==1)))
-  tabla[2,1] = length(which(which(datos[,1]==1) %in% which(datos[,2]==0)))
-  tabla[2,2] = length(which(which(datos[,1]==1) %in% which(datos[,2]==1)))
+  tabla[1,1] = length(which(which(datos[,1]==1) %in% which(datos[,2]==1)))
+  tabla[1,2] = length(which(which(datos[,1]==1) %in% which(datos[,2]==0)))
+  tabla[2,1] = length(which(which(datos[,1]==0) %in% which(datos[,2]==1)))
+  tabla[2,2] = length(which(which(datos[,1]==0) %in% which(datos[,2]==0)))
   
-  #se calcula el estadistico
-  Estadistico = (abs(tabla[1,2]-tabla[1,1])-1)^2/(tabla[1,2] + tabla[2,1])
+  #se calcula el estadistico por casos
   
-  #el p value
-  Pvalue = pchisq(Estadistico,1)
+  #para muchos datos se calcula con correccion o sin correccion
+  if(correccion == TRUE){
+      Estadistico = (abs(tabla[1,2]-tabla[2,1])-1)^2/(tabla[1,2]+tabla[2,1])
+  }else{
+      Estadistico = (tabla[1,2]-tabla[2,1])^2/(tabla[1,2]+tabla[2,1])
+  }
+  
+  n = tabla[1,2]+tabla[2,1]
+  if( n < 25){
+
+    if(tabla[1,2] == (tabla[1,2]+tabla[2,1])/2){
+      Pvalue = 1
+    }else{
+      Q = function(b,c){((b-c)^2)/(b+c)}
+      indices = (0:n)[sapply(0:n, function(x){
+        Q(x, n-x) >= Q(tabla[1,2],tabla[2,1])
+      })]
+      Pvalue = 2^(-n)*sum(
+        sapply(indices, function(i){
+        choose(n,i)
+      }))
+      
+    }
+    if(tabla[1,2] == tabla[2,1]){
+      Pvalue = 1 - (0.5)*(0.5^n)*choose(n,tabla[1,2])
+    }
+
+  }else{
+    #el p value
+    Pvalue = 1 - pchisq(Estadistico,1)
+  }
+  
   #se toma una decisión respecto a la hipótesis nula
   if(Pvalue<alfa){
     decision ="Se rechaza la hipótesis nula"
@@ -84,11 +107,45 @@ McNemar = function(datos, alfa = 0.05){
   }
   
   #resultado
-  return(c(paste0 ("Estadístico: ", Estadistico),
-           paste0("P valor: ", Pvalue),
-           paste0("Interpretación: ",decision)))
+  resultados = list(
+    Estadistico = Estadistico,
+    p_value = Pvalue,
+    interpretacion = decision,
+    casos = tabla
+  )
+  return(resultados)
 }
 
+#Se fija la semilla
+set.seed(0)
+
+#Se obtiene la información (ejemplo simulado)
+datos = matrix(rbinom(200,1, 0.5),100,2)
+
+#Caso: Distribución Ji cuadrada sin corrección
 #aplicando la función a los datos con un alfa de 0.05
-McNemar(datos,alfa = 0.05)
+(resultados = McNemar(datos,alfa = 0.05))
+
+mcnemar.test(as.matrix(resultados$casos), correct = FALSE)
+
+#Caso: Distribución Ji cuadrada con corrección
+#aplicando la función a los datos con un alfa de 0.05
+(resultados = McNemar(datos,alfa = 0.05, correccion = TRUE))
+
+mcnemar.test(as.matrix(resultados$casos), correct = TRUE)
+
+#Caso: Distribución exacta
+#install.packages("exact2x2")
+#Se fija la semilla
+set.seed(1)
+
+#Se obtiene la información (ejemplo simulado)
+datos = matrix(rbinom(30,1, 0.5),15,2)
+
+#aplicando la función a los datos con un alfa de 0.05
+(resultados = McNemar(datos,alfa = 0.05))
+
+library(exact2x2)
+mcnemar.exact(as.matrix(resultados$casos))
+
 ```
