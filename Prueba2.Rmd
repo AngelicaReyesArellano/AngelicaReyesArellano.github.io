@@ -14,13 +14,13 @@ La prueba McNemar es aplicable a datos formados por vectores de dos entradas de 
 
 Hay 4 resultados posibles para cada par:
 
-(a) ambos gemelos fallan, 
+(a) ambos gemelos aprueban, 
 
-(b) el gemelo en el control el grupo falla y el del grupo de prueba pasa, 
+(b) el gemelo en el control el grupo aprueba y el del grupo de prueba falla, 
 
 (c) el gemelo del grupo de prueba falla y el uno en el grupo de control pasa, o 
 
-(d) pasan ambos gemelos.
+(d) pasan ambos fallan
 
 
 A continuación se presenta una tabla donde la de el número de gemelos que caen en cada una de las cuatro categorías se denota a, b, c y d:
@@ -50,7 +50,7 @@ Q = (|b-a|-1)^2/(b+c)
 
 En R, se pueden encontrar las funciones "mcnemar.test" de la libreria "stats" y "mcnemar.exact" de que calculan la prueba con la aproximación Ji-cuadrada y con la distribución exacta, respectivamente.
 
-Ejemplo con la distribución aproximada (con más de 20 observaciones):
+Ejemplo con la distribución aproximada (con b + c > 25):
 ```{r cars}
 #creamos la prueba como una función
 McNemar = function(datos, alfa = 0.05, correccion = FALSE){

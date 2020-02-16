@@ -1,0 +1,71 @@
+---
+title: "ejercicio4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Ejercicio 4 - TAREA
+
+Un banco de sangre mantuvo un registro de la frecuencia cardíaca de varios donadores de sangre.
+
+```{r echo=FALSE, results='asis'}
+tabla = matrix(c("Hombres", "58, 76, 82, 74, 79, 65, 74, 86",
+                 "Mujeres", "66, 74, 69, 76, 72, 73, 75, 67, 68"),
+               ncol=2, byrow=TRUE)
+tabla = as.data.frame(tabla)
+colnames(tabla) = c("Genero", "Observaciones")
+knitr::kable(tabla, caption = "Datos")
+```
+
+## ¿Es la variación entre los hombres significativamente mayor que la variación entre las mujeres? nivel de significancia 5%.
+
+Tradicionalmente el problema se aborda suponiendo normalidad para las dos poblaciones (hombres y mujeres). En tal caso la hipótesis se puede plantear como una prueba de medias:
+
+\[
+H_0 := \sigma^2_1 \leq \sigma^2_2 \quad vs \quad H_a:= \sigma^2_1 > \sigma^2_2
+\]
+
+
+Donde el estadístico de la prueba:
+
+\[
+F = \frac{S_1^2}{S_2^2}
+\]
+Donde:
+\[S_1^2, S_2^2\] son varianzas y \[n_1, n_2\] son los tamaños de muestrales. 
+
+Así, \[F \] tiene distribución (bajo la hipótesis nula) F de Fisher con \[n_1-1\] y \[n_2-1\] grados de libertad.
+
+
+En nuestro ejercicio particular, \[\sigma^2_1\] es la varianza poblacional de los hombres y \[\sigma^2_2\] la de las mujeres.
+
+Ahora calculemos el P valor:
+```{r cars}
+#datos
+hombres = c(58, 76, 82, 74, 79, 65, 74, 86)
+mujeres = c(66, 74, 69, 76, 72, 73, 75, 67, 68)
+
+#calculando los valores muestrales
+S1 = sqrt(var(hombres))
+S2 = sqrt(var(mujeres))
+n1 = length(hombres)
+n2 = length(mujeres)
+
+#calculando el estadistico
+f = S1^2/S2^2
+
+#Calculando el p-value (prueba a una cola)
+p = 1 - pf(f,n1-1,n2-1)
+
+#Interpretando
+if(p < 0.05){
+  print("Se rechaza la hipótesis nula")
+}else{
+  print("No se rechaza la hipótesis nula")
+}
+```
+
+Se rechaza la hipótesis nula, es decir, la varianza de los latidos cardiacos de la población de hombres no es menor o igual al de las mujeres. Por lo que nos inclinariamos a pensar que hay más varianza en la población masculina.

@@ -10,6 +10,10 @@ navbar:
       name: "my-website"
     - text: "Prueba McNemar"
       href: Prueba2.html
+    - text: "Ejercicio 3 Tarea"
+      href: ejercicio3.html
+    - text: "Ejercicio 4 Tarea"
+      href: ejercicio4.html
 output:
   html_document:
     theme: cosmo

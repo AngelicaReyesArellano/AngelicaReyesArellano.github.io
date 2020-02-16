@@ -11,7 +11,7 @@
 
 
 
-<title>Prueba McNemar</title>
+<title>ejercicio4</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -298,204 +298,71 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Prueba McNemar</h1>
+<h1 class="title toc-ignore">ejercicio4</h1>
 
 </div>
 
 
-<div id="primera-practica" class="section level2">
-<h2>Primera practica</h2>
-<p>La prueba McNemar es aplicable a datos formados por vectores de dos entradas de respuesta binaria (es decir, datos pareados binarios). Por ejemplo, suponga que tiene gemelos asignados al azar a dos grupos de tratamiento (Prueba y Control), luego se evaluaron en un resultado binario (aprobado o no).</p>
-<p>Hay 4 resultados posibles para cada par:</p>
-<ol style="list-style-type: lower-alpha">
-<li><p>ambos gemelos aprueban,</p></li>
-<li><p>el gemelo en el control el grupo aprueba y el del grupo de prueba falla,</p></li>
-<li><p>el gemelo del grupo de prueba falla y el uno en el grupo de control pasa, o</p></li>
-<li><p>pasan ambos fallan</p></li>
-</ol>
-<p>A continuación se presenta una tabla donde la de el número de gemelos que caen en cada una de las cuatro categorías se denota a, b, c y d:</p>
+<div id="ejercicio-4---tarea" class="section level2">
+<h2>Ejercicio 4 - TAREA</h2>
+<p>Un banco de sangre mantuvo un registro de la frecuencia cardíaca de varios donadores de sangre.</p>
 <table>
-<caption>Tabla de casos</caption>
+<caption>Datos</caption>
 <thead>
 <tr class="header">
-<th></th>
-<th align="left">aprueba</th>
-<th align="left">falla</th>
+<th align="left">Genero</th>
+<th align="left">Observaciones</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>aprueba</td>
-<td align="left">a</td>
-<td align="left">b</td>
+<td align="left">Hombres</td>
+<td align="left">58, 76, 82, 74, 79, 65, 74, 86</td>
 </tr>
 <tr class="even">
-<td>falla</td>
-<td align="left">c</td>
-<td align="left">d</td>
+<td align="left">Mujeres</td>
+<td align="left">66, 74, 69, 76, 72, 73, 75, 67, 68</td>
 </tr>
 </tbody>
 </table>
-<p>Para probar si el tratamiento es útil, utilizamos solo el número de pares discordantes de gemelos, b y c, ya que los otros pares de gemelos no nos dicen nada sobre si el tratamiento es útil o no. El estadístico de la prueba es:</p>
+</div>
+<div id="es-la-variación-entre-los-hombres-significativamente-mayor-que-la-variación-entre-las-mujeres-nivel-de-significancia-5." class="section level2">
+<h2>¿Es la variación entre los hombres significativamente mayor que la variación entre las mujeres? nivel de significancia 5%.</h2>
+<p>Tradicionalmente el problema se aborda suponiendo normalidad para las dos poblaciones (hombres y mujeres). En tal caso la hipótesis se puede plantear como una prueba de medias:</p>
 <p><span class="math display">\[
-Q = (b-a)^2/(b+c)
+H_0 := \sigma^2_1 \leq \sigma^2_2 \quad vs \quad H_a:= \sigma^2_1 &gt; \sigma^2_2
 \]</span></p>
-<p>que para muestras grandes se distribuye como una distribución chi-cuadrado con 1 grado de libertad. Una aproximación más cercana a la distributina chi-cuadrado utiliza una corrección de continuidad:</p>
+<p>Donde el estadístico de la prueba:</p>
 <p><span class="math display">\[
-Q = (|b-a|-1)^2/(b+c)
-\]</span></p>
-<p>En R, se pueden encontrar las funciones “mcnemar.test” de la libreria “stats” y “mcnemar.exact” de que calculan la prueba con la aproximación Ji-cuadrada y con la distribución exacta, respectivamente.</p>
-<p>Ejemplo con la distribución aproximada (con b + c &gt; 25):</p>
-<pre class="r"><code>#creamos la prueba como una función
-McNemar = function(datos, alfa = 0.05, correccion = FALSE){
-  #creamos la tabla de casos
-  tabla = as.data.frame(matrix(rep(NA,4), ncol=2, byrow=TRUE))
-  colnames(tabla) = c(&quot;aprueba&quot;, &quot;falla&quot;)
-  rownames(tabla) = c(&quot;aprueba&quot;, &quot;falla&quot;)
-  
-  #Se asigna un caso a cada observación y se cuentan
-  tabla[1,1] = length(which(which(datos[,1]==1) %in% which(datos[,2]==1)))
-  tabla[1,2] = length(which(which(datos[,1]==1) %in% which(datos[,2]==0)))
-  tabla[2,1] = length(which(which(datos[,1]==0) %in% which(datos[,2]==1)))
-  tabla[2,2] = length(which(which(datos[,1]==0) %in% which(datos[,2]==0)))
-  
-  #se calcula el estadistico por casos
-  
-  #para muchos datos se calcula con correccion o sin correccion
-  if(correccion == TRUE){
-      Estadistico = (abs(tabla[1,2]-tabla[2,1])-1)^2/(tabla[1,2]+tabla[2,1])
-  }else{
-      Estadistico = (tabla[1,2]-tabla[2,1])^2/(tabla[1,2]+tabla[2,1])
-  }
-  
-  n = tabla[1,2]+tabla[2,1]
-  if( n &lt; 25){
+F = \frac{S_1^2}{S_2^2}
+\]</span> Donde: <span class="math display">\[S_1^2, S_2^2\]</span> son varianzas y <span class="math display">\[n_1, n_2\]</span> son los tamaños de muestrales.</p>
+<p>Así, <span class="math display">\[F \]</span> tiene distribución (bajo la hipótesis nula) F de Fisher con <span class="math display">\[n_1-1\]</span> y <span class="math display">\[n_2-1\]</span> grados de libertad.</p>
+<p>En nuestro ejercicio particular, <span class="math display">\[\sigma^2_1\]</span> es la varianza poblacional de los hombres y <span class="math display">\[\sigma^2_2\]</span> la de las mujeres.</p>
+<p>Ahora calculemos el P valor:</p>
+<pre class="r"><code>#datos
+hombres = c(58, 76, 82, 74, 79, 65, 74, 86)
+mujeres = c(66, 74, 69, 76, 72, 73, 75, 67, 68)
 
-    if(tabla[1,2] == (tabla[1,2]+tabla[2,1])/2){
-      Pvalue = 1
-    }else{
-      Q = function(b,c){((b-c)^2)/(b+c)}
-      indices = (0:n)[sapply(0:n, function(x){
-        Q(x, n-x) &gt;= Q(tabla[1,2],tabla[2,1])
-      })]
-      Pvalue = 2^(-n)*sum(
-        sapply(indices, function(i){
-        choose(n,i)
-      }))
-      
-    }
-    if(tabla[1,2] == tabla[2,1]){
-      Pvalue = 1 - (0.5)*(0.5^n)*choose(n,tabla[1,2])
-    }
+#calculando los valores muestrales
+S1 = sqrt(var(hombres))
+S2 = sqrt(var(mujeres))
+n1 = length(hombres)
+n2 = length(mujeres)
 
-  }else{
-    #el p value
-    Pvalue = 1 - pchisq(Estadistico,1)
-  }
-  
-  #se toma una decisión respecto a la hipótesis nula
-  if(Pvalue&lt;alfa){
-    decision =&quot;Se rechaza la hipótesis nula&quot;
-  }else{
-     decision =&quot;No se rechaza la hipótesis nula&quot;
-  }
-  
-  #resultado
-  resultados = list(
-    Estadistico = Estadistico,
-    p_value = Pvalue,
-    interpretacion = decision,
-    casos = tabla
-  )
-  return(resultados)
-}
+#calculando el estadistico
+f = S1^2/S2^2
 
-#Se fija la semilla
-set.seed(0)
+#Calculando el p-value (prueba a una cola)
+p = 1 - pf(f,n1-1,n2-1)
 
-#Se obtiene la información (ejemplo simulado)
-datos = matrix(rbinom(200,1, 0.5),100,2)
-
-#Caso: Distribución Ji cuadrada sin corrección
-#aplicando la función a los datos con un alfa de 0.05
-(resultados = McNemar(datos,alfa = 0.05))</code></pre>
-<pre><code>## $Estadistico
-## [1] 0.6923077
-## 
-## $p_value
-## [1] 0.4053806
-## 
-## $interpretacion
-## [1] &quot;No se rechaza la hipótesis nula&quot;
-## 
-## $casos
-##         aprueba falla
-## aprueba      25    23
-## falla        29    23</code></pre>
-<pre class="r"><code>mcnemar.test(as.matrix(resultados$casos), correct = FALSE)</code></pre>
-<pre><code>## 
-##  McNemar&#39;s Chi-squared test
-## 
-## data:  as.matrix(resultados$casos)
-## McNemar&#39;s chi-squared = 0.69231, df = 1, p-value = 0.4054</code></pre>
-<pre class="r"><code>#Caso: Distribución Ji cuadrada con corrección
-#aplicando la función a los datos con un alfa de 0.05
-(resultados = McNemar(datos,alfa = 0.05, correccion = TRUE))</code></pre>
-<pre><code>## $Estadistico
-## [1] 0.4807692
-## 
-## $p_value
-## [1] 0.4880741
-## 
-## $interpretacion
-## [1] &quot;No se rechaza la hipótesis nula&quot;
-## 
-## $casos
-##         aprueba falla
-## aprueba      25    23
-## falla        29    23</code></pre>
-<pre class="r"><code>mcnemar.test(as.matrix(resultados$casos), correct = TRUE)</code></pre>
-<pre><code>## 
-##  McNemar&#39;s Chi-squared test with continuity correction
-## 
-## data:  as.matrix(resultados$casos)
-## McNemar&#39;s chi-squared = 0.48077, df = 1, p-value = 0.4881</code></pre>
-<pre class="r"><code>#Caso: Distribución exacta
-#install.packages(&quot;exact2x2&quot;)
-#Se fija la semilla
-set.seed(1)
-
-#Se obtiene la información (ejemplo simulado)
-datos = matrix(rbinom(30,1, 0.5),15,2)
-
-#aplicando la función a los datos con un alfa de 0.05
-(resultados = McNemar(datos,alfa = 0.05))</code></pre>
-<pre><code>## $Estadistico
-## [1] 0.5
-## 
-## $p_value
-## [1] 0.7265625
-## 
-## $interpretacion
-## [1] &quot;No se rechaza la hipótesis nula&quot;
-## 
-## $casos
-##         aprueba falla
-## aprueba       3     5
-## falla         3     4</code></pre>
-<pre class="r"><code>library(exact2x2)
-mcnemar.exact(as.matrix(resultados$casos))</code></pre>
-<pre><code>## 
-##  Exact McNemar test (with central confidence intervals)
-## 
-## data:  as.matrix(resultados$casos)
-## b = 5, c = 3, p-value = 0.7266
-## alternative hypothesis: true odds ratio is not equal to 1
-## 95 percent confidence interval:
-##   0.3242634 10.7324879
-## sample estimates:
-## odds ratio 
-##   1.666667</code></pre>
+#Interpretando
+if(p &lt; 0.05){
+  print(&quot;Se rechaza la hipótesis nula&quot;)
+}else{
+  print(&quot;No se rechaza la hipótesis nula&quot;)
+}</code></pre>
+<pre><code>## [1] &quot;Se rechaza la hipótesis nula&quot;</code></pre>
+<p>Se rechaza la hipótesis nula, es decir, la varianza de los latidos cardiacos de la población de hombres no es menor o igual al de las mujeres. Por lo que nos inclinariamos a pensar que hay más varianza en la población masculina.</p>
 </div>
 
 
