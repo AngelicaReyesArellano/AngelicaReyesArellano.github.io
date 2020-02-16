@@ -1,5 +1,5 @@
 ---
-title: "Ejercicio 3 Tarea"
+title: "Ejercicio 3 - Tarea"
 output: html_document
 ---
 
@@ -7,7 +7,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Ejercicio 3 - TAREA
 
 Se tienen 10 carpas que usan camuflaje simple y 10 carpas que usan camuflaje estampado están instaladas en un área boscosa, y se envía un equipo de observadores para encontrarlas. El equipo informa la distancia a la que miran por primera vez cada tienda (sólo para avistamientos verdaderos) hasta que se encuentran las 20 tiendas. El proposito del estudio es determinar si el camuflaje estampado es más dificil de detectar que el camuflaje simple. La distancia a la que se detecta cada tienda se informa de la siguiente manera.
 

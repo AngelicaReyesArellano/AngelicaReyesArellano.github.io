@@ -1,13 +1,11 @@
 ---
-title: "ejercicio4"
+title: "Ejercicio 4 - Tarea"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-## Ejercicio 4 - TAREA
 
 Un banco de sangre mantuvo un registro de la frecuencia cardíaca de varios donadores de sangre.
 
