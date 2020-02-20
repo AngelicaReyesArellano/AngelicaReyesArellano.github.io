@@ -325,17 +325,11 @@ $(document).ready(function () {
 </table>
 <div id="es-la-variación-entre-los-hombres-significativamente-mayor-que-la-variación-entre-las-mujeres-nivel-de-significancia-5." class="section level2">
 <h2>¿Es la variación entre los hombres significativamente mayor que la variación entre las mujeres? nivel de significancia 5%.</h2>
-<p>Tradicionalmente el problema se aborda suponiendo normalidad para las dos poblaciones (hombres y mujeres). En tal caso la hipótesis se puede plantear como una prueba de medias:</p>
+<p>La hipótesis se puede plantear como una prueba de medias:</p>
 <p><span class="math display">\[
 H_0 := \sigma^2_1 \leq \sigma^2_2 \quad vs \quad H_a:= \sigma^2_1 &gt; \sigma^2_2
 \]</span></p>
-<p>Donde el estadístico de la prueba:</p>
-<p><span class="math display">\[
-F = \frac{S_1^2}{S_2^2}
-\]</span> Donde: <span class="math display">\[S_1^2, S_2^2\]</span> son varianzas y <span class="math display">\[n_1, n_2\]</span> son los tamaños de muestrales.</p>
-<p>Así, <span class="math display">\[F \]</span> tiene distribución (bajo la hipótesis nula) F de Fisher con <span class="math display">\[n_1-1\]</span> y <span class="math display">\[n_2-1\]</span> grados de libertad.</p>
-<p>En nuestro ejercicio particular, <span class="math display">\[\sigma^2_1\]</span> es la varianza poblacional de los hombres y <span class="math display">\[\sigma^2_2\]</span> la de las mujeres.</p>
-<p>Ahora calculemos el P valor:</p>
+<p>Se usara la prueba de Rangos.</p>
 <pre class="r"><code>#datos
 hombres = c(58, 76, 82, 74, 79, 65, 74, 86)
 mujeres = c(66, 74, 69, 76, 72, 73, 75, 67, 68)
@@ -344,16 +338,41 @@ mujeres = c(66, 74, 69, 76, 72, 73, 75, 67, 68)
 alfa = 0.05
 
 #calculando los valores muestrales
-S1 = sqrt(var(hombres))
-S2 = sqrt(var(mujeres))
+m1 = mean(hombres)
+m2 = mean(mujeres)
 n1 = length(hombres)
 n2 = length(mujeres)
 
-#calculando el estadistico
-f = S1^2/S2^2
 
-#Calculando el p-value (prueba a una cola)
-p = 1 - pf(f,n1-1,n2-1)
+#Centrando
+U = abs(hombres - m1)
+V = abs(mujeres - m2)
+
+#Ranqueando
+vector_auxiliar  = c(hombres,mujeres)
+vector_auxiliar2 = c(rep(1, n1), rep(2, n2))
+vector_auxiliar2 = vector_auxiliar2[order(vector_auxiliar)]
+vector_auxiliar  = vector_auxiliar[order(vector_auxiliar)]
+
+R = sapply(vector_auxiliar, function(x){
+  which(unique(vector_auxiliar) == x)
+})
+
+
+#calculando el estadistico
+N = n1 + n2
+t = sum(R[which(vector_auxiliar2 == 1)]^2) 
+if(length(vector_auxiliar) != length(unique(vector_auxiliar))){
+  R2m = mean(R^2)
+  t = (t - n1 * R2m)/sqrt((n1*n2/N)*sum(R^4) - n1*n2/(N-1)*(R2m)^2)
+}
+
+#Calculando el cuantil
+#z = qnorm(1-alfa/2)
+#w = n1*(N+1)*(2*N+1)/6 + z*sqrt((n1*n2*(N+1)*(2*N+1)*(8*N+11))/180)
+
+#Calculando el P value
+p = pnorm((t - n1*(N+1)*(2*N+1)/6)/sqrt(n1*n2*(N+1)*(8*N+11)/180))
 
 #Interpretando
 if(p &lt; alfa){

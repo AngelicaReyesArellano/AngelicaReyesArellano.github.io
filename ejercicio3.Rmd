@@ -21,51 +21,52 @@ knitr::kable(tabla, caption = "Datos")
 
 ## A) Construya las hipótesis correspondientes
 
-Tradicionalmente el problema se aborda suponiendo normalidad para las dos poblaciones (con camuflaje simple y estampado). En tal caso la hipótesis se puede plantear como una prueba de medias:
+La hipótesis se puede plantear como una prueba de medias:
 
 \[
 H_0 := M_1 \leq M_2 \quad vs \quad H_a:= M_1 > M_2
 \]
 
+Se usara la prueba Mann-Whitney.
 
-Donde el estadístico de la prueba:
-
-\[
-T = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\frac{S_1^2}{n_1}+\frac{S_2^2}{n_2}}}
-\]
-
-Tiene distribución (bajo la hipótesis nula) T de Student con \[v\] grados de libertad, donde:
-
-\[\bar{X}_1, \bar{X}_2 \] son las medias ,\[S_1^2, S_2^2\] son varianzas y \[n_1, n_2\] son los tamaños de muestrales. 
-Y \[v = \frac{(S_1^2/n_1 + S_2^2/n_2)^2}{(S_1^2/n_1)^2/(n_1-1) + (S_2^2/n_2)^2/(n_2-1)}\] 
-
-En nuestro ejercicio particular, \[M_1\] es la media poblacional de la distancia de las carpas simples y \[M_2\] para las carpas con estampado.
-
-Ahora calculemos el P valor:
 ```{r }
 #datos
 simple = c(25, 28, 16, 34, 38, 21, 29, 43, 32, 36)
 estampado = c(26, 12, 16, 21, 20, 14, 10, 18, 22, 20)
 
+#nivel de confianza
+alfa = 0.05
+
 #calculando los valores muestrales
-m1 = mean(simple)
-m2 = mean(estampado)
-S1 = sqrt(var(simple))
-S2 = sqrt(var(estampado))
+#tamaños de muestra
 n1 = length(simple)
 n2 = length(estampado)
 
-#calculando el estadistico
-t = (m1 - m2)/sqrt(S1^2/n1 + S2^2/n2)
+#rangos
+vector_auxiliar  = c(simple,estampado)
+vector_auxiliar2 = c(rep(1, n1), rep(2, n2))
+vector_auxiliar2 = vector_auxiliar2[order(vector_auxiliar)]
+vector_auxiliar  = vector_auxiliar[order(vector_auxiliar)]
 
-#calculando los grados de libertad de la distribución
-v = (S1^2/n1 + S2^2/n2)^2/((S1^2/n1)^2/(n1-1)+(S2^2/n2)^2/(n2-1))
+rangos = sapply(vector_auxiliar, function(x){
+  which(unique(vector_auxiliar) == x)
+})
 
-#Calculando el p-value (prueba a una cola)
-p = 1 - pt(t,v)
+#contruimos el estadistico
+R1 = rangos[which(vector_auxiliar2 == 1)]
+R2 = rangos[which(vector_auxiliar2 == 2)]
+
+U1 = R1 -n1*(n1+1)/2
+U2 = R2 -n2*(n2+1)/2
+
+#estadistico
+Estadistico = min(U1,U2)
+
+p = pwilcox(Estadistico,n2,n1)
+rm(vector_auxiliar,vector_auxiliar2)
 
 #Interpretando
-if(p < 0.05){
+if(p < alfa){
   print("Se rechaza la hipótesis nula")
 }else{
   print("No se rechaza la hipótesis nula")
@@ -74,27 +75,10 @@ if(p < 0.05){
 
 Se rechaza la hipótesis nula, es decir, la media de la carpas simples no es menor o igual a las que tiene estampado. Por lo que nos inclinariamos a pensar que las carpas con estampado se detectan con más dificultad.
 
+
 ## B) Encuentre el intervalo de confianza del 95% para las diferencias de las distancias detectadas.
 
-Al igual que en el inciso anterior, supondremos normalidad para ambas poblaciones. Entonces la cantidad pivotal que usaremos tiene la siguiente expresión:
 
-\[
-T = \frac{(\bar{X}_1 - \bar{X}_2) - (M_1 - M_2)}{\sqrt{\frac{S_1^2}{n_1}+\frac{S_2^2}{n_2}}}
-\]
-
-Donde la notación y la distribución de T es la misma que en el inciso anterior.
-
-Así, el intervalo de confianza resulta:
-
-\[
-[ (\bar{X}_1 - \bar{X}_2) - T_{1-\alpha/2, v}\sqrt{\frac{S_1^2}{n_1}+\frac{S_2^2}{n_2}}, \quad
-(\bar{X}_1 - \bar{X}_2) + T_{1-\alpha/2, v}\sqrt{\frac{S_1^2}{n_1}+\frac{S_2^2}{n_2}}
-]
-\]
-
-Donde: \[ T_{1-\alpha/2, v} \] es el cuantil \[\alpha\] de una distribución T de Student de \[v\] grados de libertad.
-
-Por lo que el intervalo es el siguiente:
 ```{r cars}
 #datos
 simple = c(25, 28, 16, 34, 38, 21, 29, 43, 32, 36)
@@ -103,27 +87,36 @@ estampado = c(26, 12, 16, 21, 20, 14, 10, 18, 22, 20)
 #nivel de confianza 5%
 alfa = 0.05
 
-#calculando los valores muestrales
-m1 = mean(simple)
-m2 = mean(estampado)
-S1 = sqrt(var(simple))
-S2 = sqrt(var(estampado))
-n1 = length(simple)
-n2 = length(estampado)
 
-#calculando los grados de libertad de la distribución
-v = (S1^2/n1 + S2^2/n2)^2/((S1^2/n1)^2/(n1-1)+(S2^2/n2)^2/(n2-1))
+#calculando los valores muestrales
+
+#tamaños de muestra
+n = length(simple)
+m = length(estampado)
+
+#calculando las diferencias
+diferencias = sapply(simple, function(x){
+  sapply(estampado, function(y){
+    x-y
+  })
+})
+diferencias = c(diferencias)
+diferencias = diferencias[order(diferencias)]
+
+#calculado el indice k adecuado
+#obtenemos el cuantil de la distribución distribución Mann-Whitney
+w= qwilcox(1-alfa/2,m,n)
+k= w - n*(n+1)/2
+
 
 #Buscamos los cuantiles 
 #cuantil interior
-(qi = qt(alfa/2,v))
+(qi = diferencias[k])
 #cuantil superior
-(qs = qt(1-alfa/2,v))
+(qs = diferencias[order(diferencias, decreasing = TRUE)][k])
 
-#Ahora vienen los limites del intervalo de confianza
-limite_inferior = (m1 - m2) - qs*sqrt(S1^2/n1 + S2^2/n2)
-limite_superior = (m1 - m2) + qs*sqrt(S1^2/n1 + S2^2/n2)
+#Ahora vienen los limites del intervalo de confianza al (1-alfa)%
 
 #INTERVALO
-c(limite_inferior,limite_superior)
+c(qi,qs)
 ```
