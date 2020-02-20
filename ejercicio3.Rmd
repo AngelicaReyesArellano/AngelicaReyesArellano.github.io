@@ -96,7 +96,34 @@ Donde: \[ T_{1-\alpha/2, v} \] es el cuantil \[\alpha\] de una distribución T d
 
 Por lo que el intervalo es el siguiente:
 ```{r cars}
-c((m1 - m2) - pt(0.975,v)*sqrt(S1^2/n1 + S2^2/n2),
-  (m1 + m2) - pt(0.975,v)*sqrt(S1^2/n1 + S2^2/n2)
-  )
+#datos
+simple = c(25, 28, 16, 34, 38, 21, 29, 43, 32, 36)
+estampado = c(26, 12, 16, 21, 20, 14, 10, 18, 22, 20)
+
+#nivel de confianza 5%
+alfa = 0.05
+
+#calculando los valores muestrales
+m1 = mean(simple)
+m2 = mean(estampado)
+S1 = sqrt(var(simple))
+S2 = sqrt(var(estampado))
+n1 = length(simple)
+n2 = length(estampado)
+
+#calculando los grados de libertad de la distribución
+v = (S1^2/n1 + S2^2/n2)^2/((S1^2/n1)^2/(n1-1)+(S2^2/n2)^2/(n2-1))
+
+#Buscamos los cuantiles 
+#cuantil interior
+(qi = qt(alfa/2,v))
+#cuantil superior
+(qs = qt(1-alfa/2,v))
+
+#Ahora vienen los limites del intervalo de confianza
+limite_inferior = (m1 - m2) - qs*sqrt(S1^2/n1 + S2^2/n2)
+limite_superior = (m1 - m2) + qs*sqrt(S1^2/n1 + S2^2/n2)
+
+#INTERVALO
+c(limite_inferior,limite_superior)
 ```

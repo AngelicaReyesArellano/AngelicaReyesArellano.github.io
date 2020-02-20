@@ -340,6 +340,9 @@ F = \frac{S_1^2}{S_2^2}
 hombres = c(58, 76, 82, 74, 79, 65, 74, 86)
 mujeres = c(66, 74, 69, 76, 72, 73, 75, 67, 68)
 
+#Nivel de confianza
+alfa = 0.05
+
 #calculando los valores muestrales
 S1 = sqrt(var(hombres))
 S2 = sqrt(var(mujeres))
@@ -353,7 +356,7 @@ f = S1^2/S2^2
 p = 1 - pf(f,n1-1,n2-1)
 
 #Interpretando
-if(p &lt; 0.05){
+if(p &lt; alfa){
   print(&quot;Se rechaza la hipótesis nula&quot;)
 }else{
   print(&quot;No se rechaza la hipótesis nula&quot;)

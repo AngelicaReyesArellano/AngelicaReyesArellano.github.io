@@ -18,7 +18,9 @@ colnames(tabla) = c("Genero", "Observaciones")
 knitr::kable(tabla, caption = "Datos")
 ```
 
+
 ## ¿Es la variación entre los hombres significativamente mayor que la variación entre las mujeres? nivel de significancia 5%.
+
 
 Tradicionalmente el problema se aborda suponiendo normalidad para las dos poblaciones (hombres y mujeres). En tal caso la hipótesis se puede plantear como una prueba de medias:
 
@@ -46,6 +48,9 @@ Ahora calculemos el P valor:
 hombres = c(58, 76, 82, 74, 79, 65, 74, 86)
 mujeres = c(66, 74, 69, 76, 72, 73, 75, 67, 68)
 
+#Nivel de confianza
+alfa = 0.05
+
 #calculando los valores muestrales
 S1 = sqrt(var(hombres))
 S2 = sqrt(var(mujeres))
@@ -59,7 +64,7 @@ f = S1^2/S2^2
 p = 1 - pf(f,n1-1,n2-1)
 
 #Interpretando
-if(p < 0.05){
+if(p < alfa){
   print("Se rechaza la hipótesis nula")
 }else{
   print("No se rechaza la hipótesis nula")
