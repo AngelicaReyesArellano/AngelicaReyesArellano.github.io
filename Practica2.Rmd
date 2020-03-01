@@ -1,0 +1,146 @@
+---
+title: "Práctica 2"
+output: html_document
+---
+
+# Práctica Número 2
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+En esta práctica construiremos una función que realice la prueba de rangos para igualdad de varianzas.
+
+## Consideraciones:
+
+-La función sólo recibirá 2 cosas:
+
+  1. La matriz de datos (columna 1 = muestra 1, columna 2  = muestra 2).
+  2. El nivel de significancia.
+  
+-Deben probar que su función de verdad "funciona" con los datos del ejercicio de temperaturas de hombre y mujeres.
+
+-Las salidas de la función deben ser:
+  1. Si se rechaza o no.
+  2. El valor de la estadística correspondiente.
+  3. El valor del cuantil correspondiente
+  4. Una tablita con los rangos asignados a cada valor de las dos muestras.
+
+
+## ¿Es la variación entre los hombres significativamente mayor que la variación entre las mujeres? nivel de significancia 5%.
+
+
+La hipótesis se puede plantear como una prueba de medias:
+
+\[
+H_0 := \sigma^2_1 = \sigma^2_2 \quad vs \quad H_a:= \sigma^2_1 \neq \sigma^2_2
+\]
+
+```{r cars}
+#datos
+hombres = c(58, 76, 82, 74, 79, 65, 74, 86, 100)
+mujeres = c(66, 74, 69, 76, 72, 73, 75, 67, 68)
+
+#Construimos la tabla con las especificaciones
+(datos = data.frame(hombres, mujeres))
+
+#construiremos la función que aplicara la prueba
+test_varianza = function(datos, alfa){
+  
+  #calculamos las medias
+  m = apply(datos, 2, mean)
+  
+  #calculamos las variables auxiliares
+  U = abs(datos[,1]-m[1])
+  V = abs(datos[,2]-m[2])
+  
+  #número de observaciones
+  n = length(U)
+  m = length(V)
+  N = n + m
+
+  #calcularemos variables auxiliares
+  aux = c(rep(1, length(U)),rep(2, length(V)))
+  
+  #Ordenamos el vector formado de concatenar U y V
+  Z = c(U,V)
+  #ahora asignaremos los rangos
+  rangos = order(Z)
+  
+  #Promediamos si se repite el mismo valor en Z
+  rangos = sapply(Z, function(z){
+              indice = which(Z == z)
+              mean(rangos[indice])
+            })
+  
+  #Rangos de U
+  RU = rangos[which(aux == 1)]
+  
+  #Rangos de V
+  RV = rangos[which(aux == 2)]
+  
+  #Calculamos el estadistíco
+  t = sum(RU^2)
+  
+  if(length(unique(Z)) != length(Z)){
+      #si hay empates
+      t = (t - n*mean(rangos^2))/sqrt(
+        (n*m)/(N*(N-1))*sum(rangos^4) - n*m/(N-1)*mean(rangos^2)^2
+      )
+  }
+  
+  #Calculamos el cuantil asociado
+  M = n*(N+1)*(2*N+1)/6
+  DS = sqrt(m*n*(N+1)*(2*N+1)*(8*N+11)/180)
+  Zp = qnorm(1-alfa/2)
+  Wp = M + Zp*DS
+ 
+  #Ahora calculemos el p value
+  #cola inferior
+  p_valor_inferior = pnorm((t-M)/DS)
+  #cola superior
+  p_valor_superior = 1 - pnorm((t-M)/DS)
+  #p-valor
+  p_valor = 2* min(p_valor_inferior, p_valor_superior)
+  
+  #Regla de Rechazo
+  if(p_valor < alfa){
+    decision = "Se rechaza la hipótesis nula"
+  }else{
+    decision = "No se rechaza la hipótesis nula"
+  }
+  
+  resultados = list()
+  resultados$interpretacion = decision
+  resultados$Estadistico = t
+  resultados$Cuantil = Wp
+  
+  #calculamos la tabla con los rankings asociados
+  tabla_rankeada = cbind(datos[,1], rangos[which(aux == 1)],
+                           datos[,2], rangos[which(aux == 2)])
+  tabla_rankeada = as.data.frame(tabla_rankeada)
+  colnames(tabla_rankeada) = c(colnames(datos)[1],
+                               paste0("Ranking_",colnames(datos)[1]),
+                               colnames(datos)[2],
+                               paste0("Ranking_",colnames(datos)[2]))
+  
+  resultados$casos = tabla_rankeada
+  
+  return(resultados)
+  
+}
+
+#Ejemplos
+#1:
+test_varianza(datos, 0.05)
+
+#2:
+datos[,1] = rnorm(9,0,1)
+datos[,2] = rnorm(9,0,10)
+test_varianza(datos, 0.05)
+
+#3:
+datos[,1] = rnorm(9,0,1)
+datos[,2] = rnorm(9,0,1)
+test_varianza(datos, 0.05)
+```
