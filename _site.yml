@@ -15,7 +15,8 @@ navbar:
     - text: "Ejercicio 4 Tarea"
       href: ejercicio4.html
     - text: "Práctica 2"
-      href: Practica2.html
+      href: Practica3.html
+      
 output:
   html_document:
     theme: cosmo
