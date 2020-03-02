@@ -67,6 +67,7 @@ test_varianza = function(datos, alfa){
   #ahora asignaremos los rangos
   rangos = sapply(sapply(Z, function(z){which(Z[order(Z)] == z)}), mean)
   
+
   #Rangos de U
   RU = rangos[which(aux == 1)]
   
