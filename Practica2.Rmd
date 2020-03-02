@@ -124,18 +124,6 @@ test_varianza = function(datos, alfa){
   
 }
 
-#Ejemplos
-#1:
-test_varianza(datos, 0.05)
-
-#2:
-set.seed(1)
-datos[,1] = rnorm(9,0,1)
-datos[,2] = rnorm(9,0,10)
-test_varianza(datos, 0.05)
-
-#3:
-datos[,1] = rnorm(9,0,1)
-datos[,2] = rnorm(9,0,1)
+#Ejemplo:
 test_varianza(datos, 0.05)
 ```

@@ -11,7 +11,7 @@
 
 
 
-<title>Prueba McNemar</title>
+<title>Práctica 2</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -301,206 +301,151 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Prueba McNemar</h1>
+<h1 class="title toc-ignore">Práctica 2</h1>
 
 </div>
 
 
-<div id="primera-practica" class="section level2">
-<h2>Primera practica</h2>
-<p>La prueba McNemar es aplicable a datos formados por vectores de dos entradas de respuesta binaria (es decir, datos pareados binarios). Por ejemplo, suponga que tiene gemelos asignados al azar a dos grupos de tratamiento (Prueba y Control), luego se evaluaron en un resultado binario (aprobado o no).</p>
-<p>Hay 4 resultados posibles para cada par:</p>
-<ol style="list-style-type: lower-alpha">
-<li><p>ambos gemelos aprueban,</p></li>
-<li><p>el gemelo en el control el grupo aprueba y el del grupo de prueba falla,</p></li>
-<li><p>el gemelo del grupo de prueba falla y el uno en el grupo de control pasa, o</p></li>
-<li><p>pasan ambos fallan</p></li>
+<div id="práctica-número-2" class="section level1">
+<h1>Práctica Número 2</h1>
+<p>En esta práctica construiremos una función que realice la prueba de rangos para igualdad de varianzas.</p>
+<div id="consideraciones" class="section level2">
+<h2>Consideraciones:</h2>
+<p>-La función sólo recibirá 2 cosas:</p>
+<ol style="list-style-type: decimal">
+<li>La matriz de datos (columna 1 = muestra 1, columna 2 = muestra 2).</li>
+<li>El nivel de significancia.</li>
 </ol>
-<p>A continuación se presenta una tabla donde la de el número de gemelos que caen en cada una de las cuatro categorías se denota a, b, c y d:</p>
-<table>
-<caption>Tabla de casos</caption>
-<thead>
-<tr class="header">
-<th></th>
-<th align="left">aprueba</th>
-<th align="left">falla</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>aprueba</td>
-<td align="left">a</td>
-<td align="left">b</td>
-</tr>
-<tr class="even">
-<td>falla</td>
-<td align="left">c</td>
-<td align="left">d</td>
-</tr>
-</tbody>
-</table>
-<p>Para probar si el tratamiento es útil, utilizamos solo el número de pares discordantes de gemelos, b y c, ya que los otros pares de gemelos no nos dicen nada sobre si el tratamiento es útil o no. El estadístico de la prueba es:</p>
+<p>-Deben probar que su función de verdad “funciona” con los datos del ejercicio de temperaturas de hombre y mujeres.</p>
+<p>-Las salidas de la función deben ser: 1. Si se rechaza o no. 2. El valor de la estadística correspondiente. 3. El valor del cuantil correspondiente 4. Una tablita con los rangos asignados a cada valor de las dos muestras.</p>
+</div>
+<div id="es-la-variación-entre-los-hombres-significativamente-mayor-que-la-variación-entre-las-mujeres-nivel-de-significancia-5." class="section level2">
+<h2>¿Es la variación entre los hombres significativamente mayor que la variación entre las mujeres? nivel de significancia 5%.</h2>
+<p>La hipótesis se puede plantear como una prueba de medias:</p>
 <p><span class="math display">\[
-Q = (b-a)^2/(b+c)
+H_0 := \sigma^2_1 = \sigma^2_2 \quad vs \quad H_a:= \sigma^2_1 \neq \sigma^2_2
 \]</span></p>
-<p>que para muestras grandes se distribuye como una distribución chi-cuadrado con 1 grado de libertad. Una aproximación más cercana a la distributina chi-cuadrado utiliza una corrección de continuidad:</p>
-<p><span class="math display">\[
-Q = (|b-a|-1)^2/(b+c)
-\]</span></p>
-<p>En R, se pueden encontrar las funciones “mcnemar.test” de la libreria “stats” y “mcnemar.exact” de que calculan la prueba con la aproximación Ji-cuadrada y con la distribución exacta, respectivamente.</p>
-<p>Ejemplo con la distribución aproximada (con b + c &gt; 25):</p>
-<pre class="r"><code>#creamos la prueba como una función
-McNemar = function(datos, alfa = 0.05, correccion = FALSE){
-  #creamos la tabla de casos
-  tabla = as.data.frame(matrix(rep(NA,4), ncol=2, byrow=TRUE))
-  colnames(tabla) = c(&quot;aprueba&quot;, &quot;falla&quot;)
-  rownames(tabla) = c(&quot;aprueba&quot;, &quot;falla&quot;)
-  
-  #Se asigna un caso a cada observación y se cuentan
-  tabla[1,1] = length(which(which(datos[,1]==1) %in% which(datos[,2]==1)))
-  tabla[1,2] = length(which(which(datos[,1]==1) %in% which(datos[,2]==0)))
-  tabla[2,1] = length(which(which(datos[,1]==0) %in% which(datos[,2]==1)))
-  tabla[2,2] = length(which(which(datos[,1]==0) %in% which(datos[,2]==0)))
-  
-  #se calcula el estadistico por casos
-  
-  #para muchos datos se calcula con correccion o sin correccion
-  if(correccion == TRUE){
-      Estadistico = (abs(tabla[1,2]-tabla[2,1])-1)^2/(tabla[1,2]+tabla[2,1])
-  }else{
-      Estadistico = (tabla[1,2]-tabla[2,1])^2/(tabla[1,2]+tabla[2,1])
-  }
-  
-  n = tabla[1,2]+tabla[2,1]
-  if( n &lt; 25){
+<pre class="r"><code>#datos
+hombres = c(74, 72, 77, 76, 76, 73, 75, 73, 74, 75)
+mujeres = c(75, 77, 78, 79, 77, 73, 78, 79, 78, 80)
 
-    if(tabla[1,2] == (tabla[1,2]+tabla[2,1])/2){
-      Pvalue = 1
-    }else{
-      Q = function(b,c){((b-c)^2)/(b+c)}
-      indices = (0:n)[sapply(0:n, function(x){
-        Q(x, n-x) &gt;= Q(tabla[1,2],tabla[2,1])
-      })]
-      Pvalue = 2^(-n)*sum(
-        sapply(indices, function(i){
-        choose(n,i)
-      }))
-      
-    }
-    if(tabla[1,2] == tabla[2,1]){
-      Pvalue = 1 - (0.5)*(0.5^n)*choose(n,tabla[1,2])
-    }
+#Construimos la tabla con las especificaciones
+(datos = data.frame(hombres, mujeres))</code></pre>
+<pre><code>##    hombres mujeres
+## 1       74      75
+## 2       72      77
+## 3       77      78
+## 4       76      79
+## 5       76      77
+## 6       73      73
+## 7       75      78
+## 8       73      79
+## 9       74      78
+## 10      75      80</code></pre>
+<pre class="r"><code>#construiremos la función que aplicara la prueba
+test_varianza = function(datos, alfa){
+  
+  #calculamos las medias
+  m = apply(datos, 2, mean)
+  
+  #calculamos las variables auxiliares
+  U = abs(datos[,1]-m[1])
+  V = abs(datos[,2]-m[2])
+  
+  #número de observaciones
+  n = length(U)
+  m = length(V)
+  N = n + m
 
-  }else{
-    #el p value
-    Pvalue = 1 - pchisq(Estadistico,1)
+  #calcularemos variables auxiliares
+  aux = c(rep(1, length(U)),rep(2, length(V)))
+  
+  #Ordenamos el vector formado de concatenar U y V
+  Z = c(U,V)
+  #ahora asignaremos los rangos
+  rangos = sapply(sapply(Z, function(z){which(Z[order(Z)] == z)}), mean)
+  
+  #Rangos de U
+  RU = rangos[which(aux == 1)]
+  
+  #Rangos de V
+  RV = rangos[which(aux == 2)]
+  
+  #Calculamos el estadistíco
+  t = sum(RU^2)
+  
+  if(length(unique(Z)) != length(Z)){
+      #si hay empates
+      t = (t - n*mean(rangos^2))/sqrt(
+        (n*m)/(N*(N-1))*sum(rangos^4) - n*m/(N-1)*mean(rangos^2)^2
+      )
   }
   
-  #se toma una decisión respecto a la hipótesis nula
-  if(Pvalue&lt;alfa){
-    decision =&quot;Se rechaza la hipótesis nula&quot;
+  #Calculamos el cuantil asociado
+  M = n*(N+1)*(2*N+1)/6
+  DS = sqrt(m*n*(N+1)*(2*N+1)*(8*N+11)/180)
+  Zp = qnorm(1-alfa/2)
+  Wp = M + Zp*DS
+ 
+  #Ahora calculemos el p value
+  #cola inferior
+  p_valor_inferior = pnorm((t-M)/DS)
+  #cola superior
+  p_valor_superior = 1 - pnorm((t-M)/DS)
+  #p-valor
+  p_valor = 2* min(p_valor_inferior, p_valor_superior)
+  
+  #Regla de Rechazo
+  if(p_valor &lt; alfa){
+    decision = &quot;Se rechaza la hipótesis nula&quot;
   }else{
-     decision =&quot;No se rechaza la hipótesis nula&quot;
+    decision = &quot;No se rechaza la hipótesis nula&quot;
   }
   
-  #resultado
-  resultados = list(
-    Estadistico = Estadistico,
-    p_value = Pvalue,
-    interpretacion = decision,
-    casos = tabla
-  )
+  resultados = list()
+  resultados$interpretacion = decision
+  resultados$Estadistico = t
+  resultados$Cuantil = Wp
+  
+  #calculamos la tabla con los rankings asociados
+  tabla_rankeada = cbind(datos[,1], rangos[which(aux == 1)],
+                           datos[,2], rangos[which(aux == 2)])
+  tabla_rankeada = as.data.frame(tabla_rankeada)
+  colnames(tabla_rankeada) = c(colnames(datos)[1],
+                               paste0(&quot;Ranking_&quot;,colnames(datos)[1]),
+                               colnames(datos)[2],
+                               paste0(&quot;Ranking_&quot;,colnames(datos)[2]))
+  
+  resultados$casos = tabla_rankeada
+  
   return(resultados)
+  
 }
 
-#Se fija la semilla
-set.seed(0)
-
-#Se obtiene la información (ejemplo simulado)
-datos = matrix(rbinom(200,1, 0.5),100,2)
-
-#Caso: Distribución Ji cuadrada sin corrección
-#aplicando la función a los datos con un alfa de 0.05
-(resultados = McNemar(datos,alfa = 0.05))</code></pre>
-<pre><code>## $Estadistico
-## [1] 0.6923077
+#Ejemplo:
+test_varianza(datos, 0.05)</code></pre>
+<pre><code>## $interpretacion
+## [1] &quot;Se rechaza la hipótesis nula&quot;
 ## 
-## $p_value
-## [1] 0.4053806
+## $Estadistico
+## [1] -0.7229738
 ## 
-## $interpretacion
-## [1] &quot;No se rechaza la hipótesis nula&quot;
+## $Cuantil
+## [1] 1995.546
 ## 
 ## $casos
-##         aprueba falla
-## aprueba      25    23
-## falla        29    23</code></pre>
-<pre class="r"><code>mcnemar.test(as.matrix(resultados$casos), correct = FALSE)</code></pre>
-<pre><code>## 
-##  McNemar&#39;s Chi-squared test
-## 
-## data:  as.matrix(resultados$casos)
-## McNemar&#39;s chi-squared = 0.69231, df = 1, p-value = 0.4054</code></pre>
-<pre class="r"><code>#Caso: Distribución Ji cuadrada con corrección
-#aplicando la función a los datos con un alfa de 0.05
-(resultados = McNemar(datos,alfa = 0.05, correccion = TRUE))</code></pre>
-<pre><code>## $Estadistico
-## [1] 0.4807692
-## 
-## $p_value
-## [1] 0.4880741
-## 
-## $interpretacion
-## [1] &quot;No se rechaza la hipótesis nula&quot;
-## 
-## $casos
-##         aprueba falla
-## aprueba      25    23
-## falla        29    23</code></pre>
-<pre class="r"><code>mcnemar.test(as.matrix(resultados$casos), correct = TRUE)</code></pre>
-<pre><code>## 
-##  McNemar&#39;s Chi-squared test with continuity correction
-## 
-## data:  as.matrix(resultados$casos)
-## McNemar&#39;s chi-squared = 0.48077, df = 1, p-value = 0.4881</code></pre>
-<pre class="r"><code>#Caso: Distribución exacta
-#install.packages(&quot;exact2x2&quot;)
-#Se fija la semilla
-set.seed(1)
-
-#Se obtiene la información (ejemplo simulado)
-datos = matrix(rbinom(30,1, 0.5),15,2)
-
-#aplicando la función a los datos con un alfa de 0.05
-(resultados = McNemar(datos,alfa = 0.05))</code></pre>
-<pre><code>## $Estadistico
-## [1] 0.5
-## 
-## $p_value
-## [1] 0.7265625
-## 
-## $interpretacion
-## [1] &quot;No se rechaza la hipótesis nula&quot;
-## 
-## $casos
-##         aprueba falla
-## aprueba       3     5
-## falla         3     4</code></pre>
-<pre class="r"><code>library(exact2x2)</code></pre>
-<pre><code>## Loading required package: exactci</code></pre>
-<pre><code>## Loading required package: ssanv</code></pre>
-<pre class="r"><code>mcnemar.exact(as.matrix(resultados$casos))</code></pre>
-<pre><code>## 
-##  Exact McNemar test (with central confidence intervals)
-## 
-## data:  as.matrix(resultados$casos)
-## b = 5, c = 3, p-value = 0.7266
-## alternative hypothesis: true odds ratio is not equal to 1
-## 95 percent confidence interval:
-##   0.3242634 10.7324879
-## sample estimates:
-## odds ratio 
-##   1.666667</code></pre>
+##    hombres Ranking_hombres mujeres Ranking_mujeres
+## 1       74             4.5      75            16.0
+## 2       72            17.5      77             1.5
+## 3       77            17.5      78             8.0
+## 4       76            11.5      79            14.5
+## 5       76            11.5      77             1.5
+## 6       73            11.5      73            20.0
+## 7       75             4.5      78             8.0
+## 8       73            11.5      79            14.5
+## 9       74             4.5      78             8.0
+## 10      75             4.5      80            19.0</code></pre>
+</div>
 </div>
 
 
