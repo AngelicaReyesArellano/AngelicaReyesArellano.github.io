@@ -486,10 +486,8 @@ datos = matrix(rbinom(30,1, 0.5),15,2)
 ##         aprueba falla
 ## aprueba       3     5
 ## falla         3     4</code></pre>
-<pre class="r"><code>library(exact2x2)</code></pre>
-<pre><code>## Loading required package: exactci</code></pre>
-<pre><code>## Loading required package: ssanv</code></pre>
-<pre class="r"><code>mcnemar.exact(as.matrix(resultados$casos))</code></pre>
+<pre class="r"><code>library(exact2x2)
+mcnemar.exact(as.matrix(resultados$casos))</code></pre>
 <pre><code>## 
 ##  Exact McNemar test (with central confidence intervals)
 ## 
