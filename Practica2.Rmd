@@ -38,8 +38,8 @@ H_0 := \sigma^2_1 = \sigma^2_2 \quad vs \quad H_a:= \sigma^2_1 \neq \sigma^2_2
 
 ```{r cars}
 #datos
-hombres = c(58, 76, 82, 74, 79, 65, 74, 86, 100)
-mujeres = c(66, 74, 69, 76, 72, 73, 75, 67, 68)
+hombres = c(74, 72, 77, 76, 76, 73, 75, 73, 74, 75)
+mujeres = c(75, 77, 78, 79, 77, 73, 78, 79, 78, 80)
 
 #Construimos la tabla con las especificaciones
 (datos = data.frame(hombres, mujeres))
@@ -65,13 +65,7 @@ test_varianza = function(datos, alfa){
   #Ordenamos el vector formado de concatenar U y V
   Z = c(U,V)
   #ahora asignaremos los rangos
-  rangos = order(Z)
-  
-  #Promediamos si se repite el mismo valor en Z
-  rangos = sapply(Z, function(z){
-              indice = which(Z == z)
-              mean(rangos[indice])
-            })
+  rangos = sapply(sapply(Z, function(z){which(Z[order(Z)] == z)}), mean)
   
   #Rangos de U
   RU = rangos[which(aux == 1)]
